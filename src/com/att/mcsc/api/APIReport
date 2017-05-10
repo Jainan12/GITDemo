@@ -1,0 +1,64 @@
+package com.att.mcsc.api;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.sapient.mcsc.common.entity.SmartCard;
+import com.sapient.mcsc.common.entity.Station;
+import com.sapient.mcsc.common.entity.Trip;
+import com.sapient.mcsc.service.MSCS;
+
+
+
+public class APIReport {
+
+	/*
+	 * Generates report for total foot falls for a given station
+	 */
+	public void footFallReport(Station station){
+		long footFallCount = 0;
+		if(station != null){
+			Station stn = MSCS.getStations().get(station.getStationCode());
+			if(stn != null){
+				footFallCount = stn.getFootFall();
+			}
+		}
+		System.out.println("Footfall so far is: "+footFallCount);
+	}
+
+	/*
+	 * @param SmartCard
+	 * This method will give details of complete trip.
+	 */
+	public ArrayList<Trip> perCardReport(SmartCard smartCard)
+	{
+		ConcurrentHashMap<Long, Trip> tripMap = MSCS.getTripMap();
+		ArrayList<Trip> trips = new ArrayList<Trip>();
+		Set<Entry<Long, Trip>> entrySet = tripMap.entrySet();
+
+		for (Entry<Long, Trip> entry : entrySet)
+		{
+			if ((entry.getValue()).getSmartCard().getCardNo() == smartCard.getCardNo()) 
+			{
+				Trip trip = entry.getValue();
+				if (trip.getDestinationStation() != null && trip.getDestinationStation().equals("")) 
+				{
+					trips.add(trip);
+					System.out.println("Card " + smartCard.getCardNo()
+							+ " used to travel from station "
+							+ trip.getSourceStation() + " to station "
+							+ trip.getDestinationStation()
+							+ ". Fare is Rs " + trip.getFare()
+							+ " and balance on the card is Rs"
+							+ trip.getBalance());
+				}
+			}
+		}
+		
+		return trips;
+	}
+
+}
